@@ -1,0 +1,77 @@
+# build.toml - Compile all ~/dead projects
+
+[targets.lat]
+type = "c"
+source = "lat.c"
+output = "exec/lat"
+flags = "-O2 -Wall"
+
+[targets.gpu_glitch_x11]
+type = "c"
+source = "gpu_glitch_x11.c"
+output = "exec/gpu_glitch_x11"
+flags = "-O2 -Wall -lX11 -lGLEW -lGL"
+
+[targets.bagel]
+type = "rust"
+source = "bagel/Cargo.toml"
+output = "exec/bagel"
+flags = "--release"
+
+[targets.cipher]
+type = "rust"
+source = "cipher/Cargo.toml"
+output = "exec/cipher"
+flags = "--release"
+
+[targets.cstress]
+type = "rust"
+source = "cstress/Cargo.toml"
+output = "exec/cstress"
+flags = "--release"
+
+[targets.gstress]
+type = "rust"
+source = "gstress/Cargo.toml"
+output = "exec/gstress"
+flags = "--release"
+
+[targets.hi]
+type = "rust"
+source = "hi/Cargo.toml"
+output = "exec/hi"
+flags = "--release"
+
+[targets.ok]
+type = "rust"
+source = "ok/Cargo.toml"
+output = "exec/ok"
+flags = "--release"
+
+[targets.pitime]
+type = "pico"
+source = "pitime/Cargo.toml"
+output = "pi/pitime.uf2"
+
+[targets.picotemp]
+type = "pico"
+source = "picotemp/Cargo.toml"
+output = "pi/picotemp.uf2"
+
+[targets.shacmp]
+type = "rust"
+source = "shacmp/Cargo.toml"
+output = "exec/shacmp"
+flags = "--release"
+
+[targets.tpmenc]
+type = "rust"
+source = "tpmenc/Cargo.toml"
+output = "exec/tpmenc"
+flags = "--release"
+
+[targets.maketoml]
+type = "rust"
+source = "maketoml/Cargo.toml"
+output = "exec/tomk"
+flags = "--release --quiet"

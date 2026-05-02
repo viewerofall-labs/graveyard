@@ -1,0 +1,99 @@
+# Language Registry
+# Defines compiler invocations, default flags, and available options for each language
+# Used by build-tool to generate Makefile rules
+
+[languages.c]
+compiler = "gcc"
+compiler_var = "GCC"
+extension = ".c"
+default_flags = "-Wall -O2"
+compile_cmd = "{compiler} {flags} {source} -c -o {output}"
+description = "C (GCC/Clang)"
+
+[languages.c.options]
+"-Wall" = "Enable all common warnings"
+"-Wextra" = "Enable extra warnings"
+"-Werror" = "Treat warnings as errors"
+"-O0" = "No optimization (fastest compile)"
+"-O1" = "Minimal optimization"
+"-O2" = "Moderate optimization"
+"-O3" = "Aggressive optimization"
+"-Os" = "Optimize for size"
+"-std=c89" = "C89 standard"
+"-std=c99" = "C99 standard"
+"-std=c11" = "C11 standard"
+"-std=c17" = "C17 standard"
+"-g" = "Debug symbols"
+"-fPIC" = "Position independent code"
+"-fno-builtin" = "Disable built-in functions"
+"-freestanding" = "Freestanding environment (kernel)"
+"-mcmodel=kernel" = "Kernel code model"
+
+[languages.asm]
+compiler = "nasm"
+compiler_var = "NASM"
+extension = ".s"
+default_flags = "-f elf64"
+compile_cmd = "{compiler} {flags} {source} -o {output}"
+description = "Assembly (NASM)"
+
+[languages.asm.options]
+"-f elf32" = "32-bit ELF format"
+"-f elf64" = "64-bit ELF format"
+"-f bin" = "Flat binary format"
+"-g" = "Debug symbols"
+"-l" = "Generate listing file"
+
+[languages.rust]
+compiler = "cargo"
+compiler_var = "CARGO"
+extension = ".rs"
+default_flags = "--release"
+compile_cmd = "{compiler} build {flags}"
+description = "Rust (Cargo)"
+
+[languages.rust.options]
+"--release" = "Release build (optimized)"
+"--debug" = "Debug build"
+"--profile custom" = "Custom profile"
+
+[languages.python]
+compiler = "pyinstaller"
+compiler_var = "PYINSTALLER"
+extension = ".py"
+default_flags = "--onefile"
+compile_cmd = "{compiler} {flags} {source} -o {output}"
+description = "Python (PyInstaller)"
+
+[languages.python.options]
+"--onefile" = "Single executable file"
+"--windowed" = "No console window (GUI apps)"
+"-d imports" = "Debug imports"
+"-D all" = "Debug all"
+
+[languages.zig]
+compiler = "zig"
+compiler_var = "ZIG"
+extension = ".zig"
+default_flags = "build-exe -O ReleaseFast"
+compile_cmd = "{compiler} {flags} {source} -o {output}"
+description = "Zig compiler"
+
+[languages.zig.options]
+"-O Debug" = "Debug build"
+"-O ReleaseSafe" = "Safe release"
+"-O ReleaseFast" = "Fast release"
+"-O ReleaseSmall" = "Small binary"
+
+[languages.link]
+compiler = "ld"
+compiler_var = "LD"
+extension = ""
+default_flags = ""
+compile_cmd = "{compiler} {flags} {source} -o {output}"
+description = "Linker (ld)"
+
+[languages.link.options]
+"-T" = "Use linker script"
+"-static" = "Static linking"
+"-shared" = "Shared library"

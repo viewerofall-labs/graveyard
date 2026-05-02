@@ -1,0 +1,72 @@
+# build.toml - Project build configuration
+# Copy this to your project directory and customize
+
+[variables]
+# Custom Makefile variables
+KERNEL_FLAGS = "-ffreestanding -fno-builtin"
+LINK_SCRIPT = "linker.ld"
+
+# ============================================================================
+# ASSEMBLY TARGETS
+# ============================================================================
+
+[targets.bootloader]
+type = "asm"
+source = "asm/boot.s"
+output = "boot.o"
+flags = "-f elf64"
+
+# ============================================================================
+# C TARGETS
+# ============================================================================
+
+[targets.kernel]
+type = "c"
+source = "c/kernel.c"
+output = "kernel.o"
+flags = "-Wall -O2 -ffreestanding -fno-builtin"
+depends_on = ["boot.o"]
+
+[targets.libc]
+type = "c"
+source = "c/libc.c"
+output = "libc.o"
+flags = "-Wall -O2 -fPIC"
+
+# ============================================================================
+# RUST TARGETS
+# ============================================================================
+
+[targets.rust_runtime]
+type = "rust"
+source = "rust/Cargo.toml"
+output = "target/release/libruntime.a"
+flags = "--release"
+
+# ============================================================================
+# PYTHON TARGETS
+# ============================================================================
+
+[targets.build_tool]
+type = "python"
+source = "python/build_tool.py"
+output = "build_tool"
+flags = "--onefile"
+
+# ============================================================================
+# LINKING TARGET
+# ============================================================================
+
+[targets.kernel_elf]
+type = "link"
+output = "kernel.elf"
+link_with = ["boot.o", "kernel.o", "libc.o", "target/release/libruntime.a"]
+flags = "-T linker.ld"
+depends_on = ["bootloader", "kernel", "libc", "rust_runtime"]
+
+# ============================================================================
+# BUILD ORCHESTRATION
+# ============================================================================
+# Use: build-tool build all
+# Or:  build-tool build kernel_elf
+# Or:  build-tool build bootloader

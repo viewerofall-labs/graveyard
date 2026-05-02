@@ -1,0 +1,31 @@
+[package]
+name = "picotemp"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+cortex-m = "0.7.7"
+cortex-m-rt = "0.7.3"
+embedded-hal = "0.2.7"
+panic-halt = "0.2.0"
+heapless = "0.7.16"
+nb = "1.1.0"
+
+[dependencies.rp-pico]
+version = "0.9.0"
+
+[dependencies.usb-device]
+version = "0.3.2"
+
+[dependencies.usbd-serial]
+version = "0.2.2"
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+debug = true
+lto = true
+opt-level = "s" 

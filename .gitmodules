@@ -1,0 +1,7 @@
+[submodule "oneshot-world-machine"]
+	path = oneshot-world-machine
+	url = https://github.com/viewerofall-labs/TWM-hyprland
+
+[submodule "consolefetch"]
+	path = consolefetch
+	url = https://github.com/viewerofall/consolefetch

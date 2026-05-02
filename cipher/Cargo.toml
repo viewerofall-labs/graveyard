@@ -1,0 +1,19 @@
+[package]
+name = "cipher"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+base64 = "0.21"  # For proper base64 encoding/decoding
+serde = { version = "1.0", features = ["derive"] }  # For level serialization
+serde_json = "1.0"  # For JSON level files
+regex = "1.10"  # For pattern matching in puzzles
+eframe = "0.29"
+egui = "0.29"
+
+[profile.release]
+opt-level = 3
+lto = true
+
+[profile.dev]
+opt-level = 0

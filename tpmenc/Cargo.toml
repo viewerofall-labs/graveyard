@@ -1,0 +1,10 @@
+[package]
+name = "tpmenc"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tss-esapi = "7.6.0"
+aes-gcm = "0.10.3"
+clap = { version = "4.6.0", features = ["derive"] }
+anyhow = "1.0"

@@ -1,0 +1,12 @@
+[package]
+name = "bagel"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "bagel"
+path = "src/main.rs"
+
+[dependencies]
+crossterm = "0.29.0"
+rodio = { version = "0.21", features = ["mp3", "wav", "vorbis"] }
