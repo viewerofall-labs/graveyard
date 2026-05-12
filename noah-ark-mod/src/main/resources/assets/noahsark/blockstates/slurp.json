@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "level=0":  { "model": "noahsark:block/slurp" },
+    "level=1":  { "model": "noahsark:block/slurp" },
+    "level=2":  { "model": "noahsark:block/slurp" },
+    "level=3":  { "model": "noahsark:block/slurp" },
+    "level=4":  { "model": "noahsark:block/slurp" },
+    "level=5":  { "model": "noahsark:block/slurp" },
+    "level=6":  { "model": "noahsark:block/slurp" },
+    "level=7":  { "model": "noahsark:block/slurp" },
+    "level=8":  { "model": "noahsark:block/slurp" },
+    "level=9":  { "model": "noahsark:block/slurp" },
+    "level=10": { "model": "noahsark:block/slurp" },
+    "level=11": { "model": "noahsark:block/slurp" },
+    "level=12": { "model": "noahsark:block/slurp" },
+    "level=13": { "model": "noahsark:block/slurp" },
+    "level=14": { "model": "noahsark:block/slurp" },
+    "level=15": { "model": "noahsark:block/slurp" }
+  }
+}

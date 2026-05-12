@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.noahsark.client.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "SlurpPlayerRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

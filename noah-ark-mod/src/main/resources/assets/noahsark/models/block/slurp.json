@@ -1,0 +1,6 @@
+{
+  "parent": "block/water",
+  "textures": {
+    "particle": "noahsark:fluid/slurp_still"
+  }
+}

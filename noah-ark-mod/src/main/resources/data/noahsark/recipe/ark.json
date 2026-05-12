@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IWI",
+    "SBS",
+    "GGG"
+  ],
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "W": "minecraft:white_wool",
+    "S": "noahsark:slurp_bucket",
+    "B": "#minecraft:boats",
+    "G": "noahsark:gopher_log"
+  },
+  "result": {
+    "id": "noahsark:ark",
+    "count": 1
+  }
+}

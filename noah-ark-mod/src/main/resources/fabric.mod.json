@@ -1,0 +1,35 @@
+{
+    "schemaVersion": 1,
+    "id": "noahsark",
+    "version": "1.0.0",
+    "name": "Noah's Ark",
+    "description": "A co-op survival challenge mod. A storm is coming — build your ark before slurp juice floods the world. Survive 8 Minecraft days on your ark or be consumed by the flood. Slurp juice corrupts and locks hearts, Slurplings hunt you in the dark, and null lightning tears through the sky. If everyone falls, the world stays cursed forever.",
+    "authors": [
+        "abyss"
+    ],
+    "contact": {
+        "homepage": "https://github.com/viewerofall/noah-ark-mod",
+        "sources": "https://github.com/viewerofall/noah-ark-mod"
+    },
+    "license": "MIT",
+    "icon": "assets/noahsark/icon.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "com.noahsark.NoahArkMod"
+        ],
+        "client": [
+            "com.noahsark.client.NoahArkModClient"
+        ]
+    },
+    "mixins": [
+        "noahsark.mixins.json",
+        "noahsark.client.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=0.15.11",
+        "minecraft": "1.21.5",
+        "java": ">=21",
+        "fabric-api": "*"
+    }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "global-control-panel",
+  "version": "1.0.0",
+  "description": "Global control panel for managing banners and lockdown across Cloudflare Workers",
+  "main": "devpanel-worker.js",
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "control-panel",
+    "banner",
+    "lockdown"
+  ],
+  "devDependencies": {
+    "wrangler": "^4.9.0"
+  }
+}

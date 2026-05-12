@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " P ",
+    "PGP",
+    "GGG"
+  ],
+  "key": {
+    "P": ["noahsark:slurp_shield_block", "noahsark:slurp_bucket"],
+    "G": "noahsark:gopher_log"
+  },
+  "result": {
+    "id": "noahsark:slurp_shield",
+    "count": 1
+  }
+}

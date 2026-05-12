@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "axis=x": {"model": "noahsark:block/gopher_log_horizontal", "x": 90, "y": 90},
+    "axis=y": {"model": "noahsark:block/gopher_log"},
+    "axis=z": {"model": "noahsark:block/gopher_log_horizontal", "x": 90}
+  }
+}

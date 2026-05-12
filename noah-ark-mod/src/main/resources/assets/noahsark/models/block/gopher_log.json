@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end":  "noahsark:block/gopher_log_top",
+    "side": "noahsark:block/gopher_log_side"
+  }
+}

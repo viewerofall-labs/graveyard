@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ISI"
+  ],
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "S": "noahsark:slurp_bucket"
+  },
+  "result": {
+    "id": "noahsark:slurp_shield_block",
+    "count": 3
+  }
+}

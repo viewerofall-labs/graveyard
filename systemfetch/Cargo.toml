@@ -1,0 +1,9 @@
+[package]
+name = "sysfetch"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+sysinfo = "0.32"
+whoami = "1.5"
+chrono = "0.4"

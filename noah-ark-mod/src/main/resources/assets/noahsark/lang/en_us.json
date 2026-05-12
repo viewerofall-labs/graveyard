@@ -1,0 +1,16 @@
+{
+  "item.noahsark.slurp_bucket": "Slurp Juice Bucket",
+  "item.noahsark.ark": "Noah's Ark",
+  "item.noahsark.slurp_shield": "Slurp Shield",
+  "item.noahsark.gopher_log": "Gopher Wood",
+  "block.noahsark.gopher_log": "Gopher Wood",
+  "block.noahsark.slurp": "Slurp Juice",
+  "item.noahsark.slurp_shield_block": "Slurp Shield Plate",
+  "block.noahsark.slurp_shield_block": "Slurp Shield Plate",
+  "effect.noahsark.slurpy": "Slurpy",
+  "effect.noahsark.world_cursed": "World's Curse",
+  "itemGroup.noahsark.main": "Noah's Ark",
+  "entity.noahsark.slurpling": "Slurpling",
+  "entity.noahsark.null_lightning": "Null Lightning",
+  "item.noahsark.slurpling_spawn_egg": "Slurpling Spawn Egg"
+}

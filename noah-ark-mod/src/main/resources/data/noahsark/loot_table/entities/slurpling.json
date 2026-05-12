@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:entity",
+  "pools": [{
+    "rolls": 1,
+    "entries": [{
+      "type": "minecraft:item",
+      "name": "noahsark:slurp_shield",
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.25 }]
+    }]
+  }]
+}

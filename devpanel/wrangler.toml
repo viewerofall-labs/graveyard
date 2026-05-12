@@ -1,0 +1,12 @@
+name = "devpanel"
+main = "devpanel-worker.js"
+compatibility_date = "2024-12-16"
+compatibility_flags = ["nodejs_compat"]
+
+# Your Cloudflare account ID
+account_id = "0e7a5e8e3d7a5765a5d97409d39ab8e1"
+
+# KV Namespace for global state
+[[kv_namespaces]]
+binding = "global_state"
+id = "dae84cb82d294e58b8359bd188f134df"
