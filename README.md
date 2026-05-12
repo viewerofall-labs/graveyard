@@ -26,5 +26,12 @@ A practically random dump of archived projects, one-offs, and experiments that d
 | `build.toml` | maketoml build file for here|
 | `languages.toml` | language index for maketoml system here |
 | `quantumclicker.zip` | Clicker game, quantum written in yourmom.|
+| `devpanel` | Dead control panel system for my websites. I sorta dont care about it anymore. | 
+| `launchapd` | Launchpad application that barely works and is spelt wrong. First project ever so. |
+| `noah-ark-mod` | Noahs ark mod for minecraft fabric 1.20.1. Works. Check the readme. | 
+| `oneshot` | oneshot themed music player, solstice theme + library swap and base theme with custom stuff |
+| `powermenu` | Crappy power menu when I tried learning rust, good for when I was learning the rust book |
+| `systemd-tui` | Systemd service management, no user process implant. |
+| `systemfetch` | Systemfetch thingy with all the information known to man. |
 
 > Most of this is undocumented. That's the point.
