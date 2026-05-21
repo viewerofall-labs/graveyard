@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+import evdev, time
+
+cap = {evdev.ecodes.EV_KEY: [evdev.ecodes.KEY_POWER]}
+ui = evdev.UInput(cap, name="Power Button", bustype=evdev.ecodes.BUS_HOST)
+time.sleep(0.1)  # let udev settle
+ui.write(evdev.ecodes.EV_KEY, evdev.ecodes.KEY_POWER, 1)
+ui.syn()
+time.sleep(0.1)
+ui.write(evdev.ecodes.EV_KEY, evdev.ecodes.KEY_POWER, 0)
+ui.syn()
+time.sleep(0.1)
+ui.close()

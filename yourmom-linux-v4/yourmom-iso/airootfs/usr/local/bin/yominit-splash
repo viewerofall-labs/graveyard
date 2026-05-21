@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# yominit-splash — YoMom Linux boot splash
+
+# Reset terminal
+printf '\033[2J\033[H\033[?25l'
+
+GREEN='\033[0;32m'; BOLD='\033[1m'; DIM='\033[2m'; RESET='\033[0m'
+
+echo
+echo -e "${GREEN}${BOLD}"
+echo '  ██╗   ██╗ ██████╗     ███╗   ███╗ █████╗ ███╗   ███╗ █████╗ '
+echo '  ╚██╗ ██╔╝██╔═══██╗    ████╗ ████║██╔══██╗████╗ ████║██╔══██╗'
+echo '   ╚████╔╝ ██║   ██║    ██╔████╔██║███████║██╔████╔██║███████║'
+echo '    ╚██╔╝  ██║   ██║    ██║╚██╔╝██║██╔══██║██║╚██╔╝██║██╔══██║'
+echo '     ██║   ╚██████╔╝    ██║ ╚═╝ ██║██║  ██║██║ ╚═╝ ██║██║  ██║'
+echo '     ╚═╝    ╚═════╝     ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝'
+echo -e "${RESET}"
+echo -e "  ${BOLD}VQ4  —  Version 4: Quantum${RESET}          ${DIM}Based on Arch Linux${RESET}"
+echo -e "  ${DIM}yo mama so fast, she booted before you blinked${RESET}"
+echo
+
+# Boot steps with timing
+steps=(
+    "Mounting filesystems"
+    "Starting udev"
+    "Activating swap"
+    "Bringing up network"
+    "Starting yominit services"
+    "Launching session"
+)
+
+for step in "${steps[@]}"; do
+    printf "  ${GREEN}»${RESET} %-36s" "$step..."
+    sleep 0.18
+    echo -e "${GREEN}ok${RESET}"
+done
+
+echo
+printf '\033[?25h'

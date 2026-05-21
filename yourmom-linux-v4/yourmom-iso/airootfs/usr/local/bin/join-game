@@ -1,0 +1,603 @@
+#!/usr/bin/env bash
+# join-game — YoMom Linux VQ4 installer
+# NOTE: no set -e here — we handle errors explicitly so cancel never kills the script
+
+# ── colors ────────────────────────────────────────────────────────────────────
+# Normal items: white on black
+# Selected/active items: black on white (clear inversion)
+export NEWT_COLORS='root=white,black
+border=white,black
+window=white,black
+shadow=black,black
+title=white,black
+button=black,white
+actbutton=black,white
+compactbutton=white,black
+listbox=white,black
+actlistbox=black,white
+actsellistbox=black,white
+checkbox=white,black
+actcheckbox=black,white
+entry=white,black
+label=white,black
+helpline=white,black
+roottext=white,black
+'
+
+# ── state ─────────────────────────────────────────────────────────────────────
+DISK=""
+BOOT_MODE=""
+FS_TYPE="btrfs"
+TIMEZONE="UTC"
+LOCALE="en_US.UTF-8"
+HOSTNAME="yourmom"
+ROOT_PASS=""
+USERNAME=""
+USER_PASS=""
+DESKTOP="none"
+BOOTLOADER="grub"
+EXTRA_PKGS=()
+
+T="YoMom Linux  VQ4"
+
+# ── helpers ───────────────────────────────────────────────────────────────────
+val()    { [[ -n "$1" ]] && echo "$1" || echo "—"; }
+msg()    { whiptail --title "$T" --msgbox "$1" 12 60; }
+info()   { whiptail --title "$T" --infobox "  $1" 5 54; sleep 1; }
+yesno()  { whiptail --title "$T" --yesno "$1" 12 60; }
+input()  { whiptail --title "$T" --inputbox "$1" 10 60 "$2" 3>&1 1>&2 2>&3; }
+passbox(){ whiptail --title "$T" --passwordbox "$1" 10 60 3>&1 1>&2 2>&3; }
+
+detect_boot() {
+    [[ -d /sys/firmware/efi/efivars ]] && BOOT_MODE="uefi" || BOOT_MODE="bios"
+}
+
+# ── spawn point / disk ────────────────────────────────────────────────────────
+select_disk() {
+    local entries=()
+    while IFS= read -r line; do
+        local name size model
+        name=$(awk '{print $1}' <<< "$line")
+        size=$(awk '{print $2}' <<< "$line")
+        model=$(awk '{$1=$2=""; print $0}' <<< "$line" | xargs)
+        entries+=("/dev/$name" "${size}  ${model}")
+    done < <(lsblk -d -o NAME,SIZE,MODEL --noheadings | grep -v loop)
+
+    DISK=$(whiptail --title "$T" \
+        --menu $'  Select installation disk\n\n  WARNING: All data will be erased.' \
+        20 64 8 "${entries[@]}" 3>&1 1>&2 2>&3) || return 1
+}
+
+# ── filesystem ────────────────────────────────────────────────────────────────
+select_fs() {
+    FS_TYPE=$(whiptail --title "$T" \
+        --menu "  Select filesystem" 12 60 2 \
+        "btrfs"  "Modern  (snapshots, compression)" \
+        "ext4"   "Classic (reliable, simple)" \
+        3>&1 1>&2 2>&3) || return 1
+}
+
+# ── timezone ──────────────────────────────────────────────────────────────────
+select_timezone() {
+    local regions=()
+    for r in $(find /usr/share/zoneinfo -mindepth 1 -maxdepth 1 -type d | sort | xargs -I{} basename {}); do
+        regions+=("$r" "")
+    done
+    local region
+    region=$(whiptail --title "$T" \
+        --menu "  Select region" 22 60 14 "${regions[@]}" 3>&1 1>&2 2>&3) || return 1
+
+    local zones=()
+    for z in $(find "/usr/share/zoneinfo/$region" -type f | sort | xargs -I{} basename {}); do
+        zones+=("$z" "")
+    done
+    local zone
+    zone=$(whiptail --title "$T" \
+        --menu "  Select timezone in $region" 22 60 14 "${zones[@]}" 3>&1 1>&2 2>&3) || return 1
+    TIMEZONE="$region/$zone"
+}
+
+# ── locale ────────────────────────────────────────────────────────────────────
+select_locale() {
+    LOCALE=$(whiptail --title "$T" \
+        --menu "  Select locale" 16 60 7 \
+        "en_US.UTF-8"  "English (US)" \
+        "en_GB.UTF-8"  "English (UK)" \
+        "de_DE.UTF-8"  "German" \
+        "fr_FR.UTF-8"  "French" \
+        "es_ES.UTF-8"  "Spanish" \
+        "pt_BR.UTF-8"  "Portuguese (Brazil)" \
+        "ja_JP.UTF-8"  "Japanese" \
+        3>&1 1>&2 2>&3) || return 1
+}
+
+# ── hostname ──────────────────────────────────────────────────────────────────
+set_hostname() {
+    local h
+    h=$(input "  Enter hostname:" "$HOSTNAME") || return 1
+    [[ -n "$h" ]] && HOSTNAME="$h"
+}
+
+# ── root password ─────────────────────────────────────────────────────────────
+set_root_pass() {
+    local p1 p2
+    p1=$(passbox "  Set root password:") || return 1
+    p2=$(passbox "  Confirm root password:") || return 1
+    if [[ "$p1" != "$p2" ]]; then
+        msg "  Passwords do not match."; set_root_pass; return
+    fi
+    [[ -z "$p1" ]] && { msg "  Password cannot be empty."; set_root_pass; return; }
+    ROOT_PASS="$p1"
+}
+
+# ── user account ──────────────────────────────────────────────────────────────
+set_user() {
+    local u
+    u=$(input "  Enter username (blank to skip):" "$USERNAME") || return 1
+    [[ -z "$u" ]] && { USERNAME=""; USER_PASS=""; return; }
+    USERNAME="$u"
+
+    local p1 p2
+    p1=$(passbox "  Password for $USERNAME:") || return 1
+    p2=$(passbox "  Confirm password for $USERNAME:") || return 1
+    if [[ "$p1" != "$p2" ]]; then
+        msg "  Passwords do not match."; set_user; return
+    fi
+    USER_PASS="$p1"
+}
+
+# ── desktop ───────────────────────────────────────────────────────────────────
+select_desktop() {
+    DESKTOP=$(whiptail --title "$T" \
+        --menu "  Select desktop environment" 18 66 7 \
+        "none"      "None  (terminal only)" \
+        "plasma"    "KDE Plasma  (feature-rich, highly customizable)" \
+        "gnome"     "GNOME  (clean and modern)" \
+        "xfce4"     "XFCE  (lightweight)" \
+        "i3"        "i3  (tiling window manager)" \
+        "hyprland"  "Hyprland  (Wayland tiling compositor)" \
+        "sway"      "Sway  (Wayland i3 clone)" \
+        3>&1 1>&2 2>&3) || return 1
+}
+
+# ── bootloader ────────────────────────────────────────────────────────────────
+select_bootloader() {
+    local options=(
+        "grub"         "GRUB  (BIOS + UEFI, recommended)"
+        "systemd-boot" "systemd-boot  (UEFI only, minimal)"
+        "refind"       "rEFInd  (UEFI only, graphical)"
+    )
+
+    if [[ "$BOOT_MODE" == "bios" ]]; then
+        msg "  BIOS mode detected.\n  Only GRUB supports BIOS — bootloader set to GRUB."
+        BOOTLOADER="grub"
+        return
+    fi
+
+    BOOTLOADER=$(whiptail --title "$T" \
+        --menu "  Select bootloader" 14 64 3 "${options[@]}" \
+        3>&1 1>&2 2>&3) || return 1
+}
+
+# ── extra packages — live pacman search ───────────────────────────────────────
+select_extra_pkgs() {
+    local filter=""
+
+    has_pkg() {
+        [[ ${#EXTRA_PKGS[@]} -eq 0 ]] && return 1
+        printf '%s\n' "${EXTRA_PKGS[@]}" | grep -qx "$1"
+    }
+
+    # Sync package databases so pacman -Ss works
+    if [[ ! -d /var/lib/pacman/sync ]] || [[ -z "$(ls /var/lib/pacman/sync/*.db 2>/dev/null)" ]]; then
+        info "Syncing package database ..."
+        pacman -Sy --noconfirm 2>/dev/null || true
+    fi
+
+    while true; do
+        # Search prompt
+        filter=$(whiptail --title "$T" \
+            --inputbox \
+"  Search packages  —  ${#EXTRA_PKGS[@]} selected
+  Type to search the Arch repos, Esc to finish." \
+            9 60 "$filter" 3>&1 1>&2 2>&3) || break
+
+        [[ -z "$filter" ]] && { msg "  Enter a search term."; continue; }
+
+        info "Searching \"$filter\" ..."
+
+        # Query pacman, parse into pkg|desc pairs, limit to 150 results
+        local results=()
+        local line pkg desc count=0
+        pkg=""
+        while IFS= read -r line; do
+            if [[ "$line" =~ ^[a-zA-Z] ]]; then
+                pkg=$(awk '{print $1}' <<< "$line" | cut -d'/' -f2)
+            elif [[ -n "$pkg" ]]; then
+                desc="${line#"${line%%[![:space:]]*}"}"
+                [[ -n "$desc" ]] && results+=("$pkg|$desc")
+                pkg=""
+                (( ++count )) || true
+                [[ $count -ge 150 ]] && break
+            fi
+        done < <(pacman -Ss "$filter" 2>/dev/null)
+
+        if [[ ${#results[@]} -eq 0 ]]; then
+            msg "  No packages found for \"$filter\"."
+            continue
+        fi
+
+        # Build checklist entries
+        local entries=()
+        for entry in "${results[@]}"; do
+            IFS='|' read -r pkg desc <<< "$entry"
+            has_pkg "$pkg" && entries+=("$pkg" "$desc" on) \
+                           || entries+=("$pkg" "$desc" off)
+        done
+
+        local result
+        result=$(whiptail --title "$T" \
+            --checklist \
+"  \"$filter\"  —  ${#results[@]} results  |  space to toggle, enter to confirm, esc to search again" \
+            36 72 28 "${entries[@]}" 3>&1 1>&2 2>&3) || continue
+
+        # Merge selections: keep existing picks not in this result set,
+        # then apply whatever was checked in this view
+        local visible=()
+        for entry in "${results[@]}"; do
+            visible+=("${entry%%|*}")
+        done
+
+        local new_pkgs=()
+        # Preserve picks outside this search result
+        if [[ ${#EXTRA_PKGS[@]} -gt 0 ]]; then
+            for pkg in "${EXTRA_PKGS[@]}"; do
+                local in_view=0
+                for vp in "${visible[@]}"; do
+                    [[ "$pkg" == "$vp" ]] && in_view=1 && break
+                done
+                [[ $in_view -eq 0 ]] && new_pkgs+=("$pkg")
+            done
+        fi
+        # Add newly checked packages
+        for pkg in $result; do
+            pkg="${pkg//\"/}"
+            [[ -n "$pkg" ]] && new_pkgs+=("$pkg")
+        done
+        EXTRA_PKGS=("${new_pkgs[@]+"${new_pkgs[@]}"}")
+    done
+}
+
+# ── summary ───────────────────────────────────────────────────────────────────
+show_summary() {
+    local user_line="${USERNAME:-none (root only)}"
+    local pkgs_line="${EXTRA_PKGS[*]:-none}"
+    [[ ${#pkgs_line} -gt 36 ]] && pkgs_line="${pkgs_line:0:33}..."
+
+    whiptail --title "$T" --yesno \
+"
+  Disk          $(val "$DISK")
+  Boot mode     ${BOOT_MODE^^}
+  Filesystem    $(val "$FS_TYPE")
+  Timezone      $(val "$TIMEZONE")
+  Locale        $(val "$LOCALE")
+  Hostname      $(val "$HOSTNAME")
+  User          $user_line
+  Desktop       $(val "$DESKTOP")
+  Bootloader    $(val "$BOOTLOADER")
+  Extra pkgs    $pkgs_line
+
+  ALL DATA ON $DISK WILL BE ERASED.
+
+  Proceed with installation?" \
+    24 60
+}
+
+# ── install ───────────────────────────────────────────────────────────────────
+do_install() {
+    local LOG=/tmp/yourmom-install.log
+    local GREEN='\033[0;32m' RED='\033[0;31m' BOLD='\033[1m' DIM='\033[2m' RESET='\033[0m'
+
+    # Print a visible step header to the terminal and log
+    step() {
+        printf "\n${BOLD}  >>  %s${RESET}\n" "$*" | tee -a "$LOG"
+    }
+    ok() {
+        printf "  ${GREEN}ok${RESET}  %s\n" "$*" | tee -a "$LOG"
+    }
+    die_install() {
+        printf "\n${RED}  FAILED:${RESET} %s\n" "$*" | tee -a "$LOG"
+        printf "  ${DIM}Full log: %s${RESET}\n\n" "$LOG"
+        printf "  Press enter to return to the menu...\n"
+        read -r
+    }
+
+    # Clear screen — no more whiptail until we're done
+    clear
+    printf "${BOLD}  YoMom Linux VQ4 — Installing to %s${RESET}\n" "$DISK"
+    printf "  Log: %s\n\n" "$LOG"
+    : > "$LOG"
+
+    set -e
+    trap 'set +e; trap - ERR; die_install "$(tail -1 "$LOG" 2>/dev/null || echo "unknown error")"' ERR
+
+    # ── Partition ──────────────────────────────────────────────────────────────
+    step "Partitioning $DISK ..."
+    local EFI="" SWAP="" ROOT=""
+    if [[ "$BOOT_MODE" == "uefi" ]]; then
+        parted -s "$DISK" mklabel gpt \
+            mkpart ESP fat32 1MiB 513MiB set 1 esp on \
+            mkpart swap linux-swap 513MiB 4609MiB \
+            mkpart root ext2 4609MiB 100% 2>&1 | tee -a "$LOG"
+        if [[ "$DISK" == *nvme* ]]; then
+            EFI="${DISK}p1"; SWAP="${DISK}p2"; ROOT="${DISK}p3"
+        else
+            EFI="${DISK}1"; SWAP="${DISK}2"; ROOT="${DISK}3"
+        fi
+    else
+        parted -s "$DISK" mklabel msdos \
+            mkpart primary linux-swap 1MiB 4097MiB \
+            mkpart primary ext2 4097MiB 100% set 2 boot on 2>&1 | tee -a "$LOG"
+        if [[ "$DISK" == *nvme* ]]; then
+            SWAP="${DISK}p1"; ROOT="${DISK}p2"
+        else
+            SWAP="${DISK}1"; ROOT="${DISK}2"
+        fi
+    fi
+    # Let the kernel re-read the partition table
+    partprobe "$DISK" 2>/dev/null || true
+    sleep 1
+    ok "Partitioned"
+
+    # ── Format ─────────────────────────────────────────────────────────────────
+    step "Formatting partitions ..."
+    [[ -n "$EFI" ]] && { mkfs.fat -F32 -n YOURMOM_EFI "$EFI" 2>&1 | tee -a "$LOG"; }
+    mkswap -L yourmom_swap "$SWAP" 2>&1 | tee -a "$LOG"
+    swapon "$SWAP" 2>&1 | tee -a "$LOG"
+
+    if [[ "$FS_TYPE" == "btrfs" ]]; then
+        mkfs.btrfs -L yourmom_root -f "$ROOT" 2>&1 | tee -a "$LOG"
+        mount "$ROOT" /mnt
+        btrfs subvolume create /mnt/@ 2>&1 | tee -a "$LOG"
+        btrfs subvolume create /mnt/@home 2>&1 | tee -a "$LOG"
+        btrfs subvolume create /mnt/@snapshots 2>&1 | tee -a "$LOG"
+        umount /mnt
+        local BOPTS="noatime,compress=zstd,space_cache=v2"
+        mount -o "${BOPTS},subvol=@" "$ROOT" /mnt
+        mkdir -p /mnt/{home,.snapshots}
+        mount -o "${BOPTS},subvol=@home" "$ROOT" /mnt/home
+        mount -o "${BOPTS},subvol=@snapshots" "$ROOT" /mnt/.snapshots
+    else
+        mkfs.ext4 -L yourmom_root "$ROOT" 2>&1 | tee -a "$LOG"
+        mount "$ROOT" /mnt
+    fi
+
+    mkdir -p /mnt/boot
+    if [[ -n "$EFI" ]]; then
+        mkdir -p /mnt/boot/efi
+        mount "$EFI" /mnt/boot/efi
+    fi
+    ok "Formatted and mounted"
+
+    # ── Mirrors ────────────────────────────────────────────────────────────────
+    step "Ranking mirrors ..."
+    if command -v reflector &>/dev/null; then
+        reflector --age 12 --sort rate --save /etc/pacman.d/mirrorlist 2>&1 | tee -a "$LOG" || true
+    fi
+    ok "Mirrors ready"
+
+    # ── Packages ───────────────────────────────────────────────────────────────
+    local PKGS=(base linux linux-firmware base-devel grub efibootmgr
+                networkmanager sudo nano vim git gcc make
+                reflector bash-completion btrfs-progs)
+
+    case "$BOOTLOADER" in
+        refind) PKGS+=(refind) ;;
+    esac
+
+    case "$DESKTOP" in
+        plasma)   PKGS+=(plasma-meta sddm konsole dolphin) ;;
+        gnome)    PKGS+=(gnome gnome-extra gdm) ;;
+        xfce4)    PKGS+=(xfce4 xfce4-goodies lightdm lightdm-gtk-greeter) ;;
+        i3)       PKGS+=(i3-wm i3status dmenu xterm lightdm lightdm-gtk-greeter) ;;
+        hyprland) PKGS+=(hyprland kitty waybar wofi) ;;
+        sway)     PKGS+=(sway swaybar dmenu foot) ;;
+    esac
+
+    [[ ${#EXTRA_PKGS[@]} -gt 0 ]] && PKGS+=("${EXTRA_PKGS[@]}")
+
+    step "Installing packages (this will take a while) ..."
+    printf "  Packages: %s\n\n" "${PKGS[*]}" | tee -a "$LOG"
+    pacstrap -K /mnt "${PKGS[@]}" 2>&1 | tee -a "$LOG"
+    ok "Packages installed"
+
+    # ── fstab ──────────────────────────────────────────────────────────────────
+    step "Generating fstab ..."
+    genfstab -U /mnt 2>&1 | tee -a "$LOG" >> /mnt/etc/fstab
+    ok "fstab written"
+
+    # ── System config ──────────────────────────────────────────────────────────
+    step "Configuring system ..."
+    arch-chroot /mnt ln -sf "/usr/share/zoneinfo/$TIMEZONE" /etc/localtime
+    arch-chroot /mnt hwclock --systohc
+    sed -i "s/#${LOCALE}/${LOCALE}/" /mnt/etc/locale.gen
+    arch-chroot /mnt locale-gen 2>&1 | tee -a "$LOG"
+    echo "LANG=${LOCALE}" > /mnt/etc/locale.conf
+    echo "$HOSTNAME" > /mnt/etc/hostname
+    cat > /mnt/etc/hosts << EOF
+127.0.0.1   localhost
+::1         localhost
+127.0.1.1   ${HOSTNAME}.localdomain  ${HOSTNAME}
+EOF
+    cat > /mnt/etc/os-release << 'OSEOF'
+NAME="YoMom Linux"
+PRETTY_NAME="YoMom Linux VQ4 (Version 4: Quantum)"
+ID=arch
+ID_LIKE=arch
+BUILD_ID=vq4
+ANSI_COLOR="0;37"
+HOME_URL="https://github.com/viewerofall/yourmom-lang"
+LOGO=yourmom
+OSEOF
+    ok "System configured"
+
+    # ── Passwords ──────────────────────────────────────────────────────────────
+    step "Setting passwords ..."
+    echo "root:${ROOT_PASS}" | arch-chroot /mnt chpasswd
+    if [[ -n "$USERNAME" ]]; then
+        arch-chroot /mnt useradd -m -G wheel "$USERNAME"
+        echo "${USERNAME}:${USER_PASS}" | arch-chroot /mnt chpasswd
+        sed -i 's/# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /mnt/etc/sudoers
+    fi
+    ok "Passwords set"
+
+    # ── Bootloader ─────────────────────────────────────────────────────────────
+    step "Installing bootloader ($BOOTLOADER) ..."
+    case "$BOOTLOADER" in
+        grub)
+            if [[ "$BOOT_MODE" == "uefi" ]]; then
+                arch-chroot /mnt grub-install --target=x86_64-efi \
+                    --efi-directory=/boot/efi --bootloader-id=YOURMOM 2>&1 | tee -a "$LOG"
+            else
+                arch-chroot /mnt grub-install --target=i386-pc "$DISK" 2>&1 | tee -a "$LOG"
+            fi
+            sed -i 's/GRUB_DISTRIBUTOR="Arch"/GRUB_DISTRIBUTOR="YoMom Linux"/' /mnt/etc/default/grub
+            sed -i 's/GRUB_TIMEOUT=5/GRUB_TIMEOUT=3/' /mnt/etc/default/grub
+            arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg 2>&1 | tee -a "$LOG"
+            ;;
+
+        systemd-boot)
+            arch-chroot /mnt bootctl install 2>&1 | tee -a "$LOG"
+            local root_uuid
+            root_uuid=$(blkid -s UUID -o value "$ROOT")
+            mkdir -p /mnt/boot/loader/entries
+            cat > /mnt/boot/loader/loader.conf << EOF
+default yourmom.conf
+timeout 3
+console-mode max
+editor no
+EOF
+            cat > /mnt/boot/loader/entries/yourmom.conf << EOF
+title   YoMom Linux VQ4
+linux   /vmlinuz-linux
+initrd  /initramfs-linux.img
+options root=UUID=${root_uuid} rw quiet
+EOF
+            cat > /mnt/boot/loader/entries/yourmom-fallback.conf << EOF
+title   YoMom Linux VQ4 (fallback)
+linux   /vmlinuz-linux
+initrd  /initramfs-linux-fallback.img
+options root=UUID=${root_uuid} rw
+EOF
+            ;;
+
+        refind)
+            arch-chroot /mnt refind-install 2>&1 | tee -a "$LOG"
+            local root_uuid
+            root_uuid=$(blkid -s UUID -o value "$ROOT")
+            cat > /mnt/boot/refind_linux.conf << EOF
+"YoMom Linux VQ4"         "root=UUID=${root_uuid} rw quiet"
+"YoMom Linux VQ4 (single user)" "root=UUID=${root_uuid} rw single"
+EOF
+            ;;
+    esac
+    ok "Bootloader installed"
+
+    # ── Services ───────────────────────────────────────────────────────────────
+    step "Enabling services ..."
+    arch-chroot /mnt systemctl enable NetworkManager fstrim.timer 2>&1 | tee -a "$LOG"
+    case "$DESKTOP" in
+        plasma)        arch-chroot /mnt systemctl enable sddm 2>&1 | tee -a "$LOG" ;;
+        gnome)         arch-chroot /mnt systemctl enable gdm 2>&1 | tee -a "$LOG" ;;
+        xfce4|i3|sway) arch-chroot /mnt systemctl enable lightdm 2>&1 | tee -a "$LOG" ;;
+    esac
+    if [[ ${#EXTRA_PKGS[@]} -gt 0 ]]; then
+        [[ " ${EXTRA_PKGS[*]} " =~ " docker "  ]] && arch-chroot /mnt systemctl enable docker
+        [[ " ${EXTRA_PKGS[*]} " =~ " openssh " ]] && arch-chroot /mnt systemctl enable sshd
+        [[ " ${EXTRA_PKGS[*]} " =~ " ufw "     ]] && arch-chroot /mnt systemctl enable ufw
+    fi
+    ok "Services enabled"
+
+    # ── YoMom tools ────────────────────────────────────────────────────────────
+    step "Copying YoMom tools ..."
+    for tool in yourmom join-game mama dada yominit yominit-splash; do
+        [[ -f /usr/local/bin/$tool ]] && \
+            install -Dm755 /usr/local/bin/$tool /mnt/usr/local/bin/$tool
+    done
+    if [[ -f /etc/systemd/system/yominit-splash.service ]]; then
+        install -Dm644 /etc/systemd/system/yominit-splash.service \
+            /mnt/etc/systemd/system/yominit-splash.service
+        arch-chroot /mnt systemctl enable yominit-splash 2>&1 | tee -a "$LOG"
+    fi
+    ok "YoMom tools installed"
+
+    set +e
+    trap - ERR
+
+    # ── Done ───────────────────────────────────────────────────────────────────
+    printf "\n${GREEN}${BOLD}"
+    printf "  ╔══════════════════════════════════════╗\n"
+    printf "  ║   Installation complete!             ║\n"
+    printf "  ╚══════════════════════════════════════╝\n"
+    printf "${RESET}\n"
+    printf "  YoMom Linux VQ4 is installed on %s\n\n" "$DISK"
+    printf "  Next steps:\n"
+    printf "    umount -R /mnt\n"
+    printf "    reboot\n\n"
+    printf "  Remove the ISO before rebooting.\n"
+    printf "  ${DIM}yo mama so installed, she's already running.${RESET}\n\n"
+    printf "  Press enter to return to the menu...\n"
+    read -r
+}
+
+# ── main ──────────────────────────────────────────────────────────────────────
+detect_boot
+
+while true; do
+    CHOICE=$(whiptail --title "$T" --menu \
+"
+  YoMom Linux  VQ4                boot: ${BOOT_MODE^^}
+
+  disk:      $(val "$DISK")
+  fs:        $(val "$FS_TYPE")     timezone:  $(val "$TIMEZONE")
+  locale:    $(val "$LOCALE")     hostname:  $(val "$HOSTNAME")
+  user:      $(val "$USERNAME")     desktop:   $(val "$DESKTOP")
+  bootloader: $(val "$BOOTLOADER")     pkgs:      ${#EXTRA_PKGS[@]} selected
+" \
+        30 66 11 \
+        "1"   "  Disk          $(val "$DISK")" \
+        "2"   "  Filesystem    $(val "$FS_TYPE")" \
+        "3"   "  Timezone      $(val "$TIMEZONE")" \
+        "4"   "  Locale        $(val "$LOCALE")" \
+        "5"   "  Hostname      $(val "$HOSTNAME")" \
+        "6"   "  Root password $([ -n "$ROOT_PASS" ] && echo "(set)" || echo "not set")" \
+        "7"   "  User account  $(val "$USERNAME")" \
+        "8"   "  Desktop       $(val "$DESKTOP")" \
+        "9"   "  Bootloader    $(val "$BOOTLOADER")" \
+        "10"  "  Extra packages  (${#EXTRA_PKGS[@]} selected)" \
+        "11"  "  Install" \
+        "0"   "  Quit" \
+        3>&1 1>&2 2>&3) || break
+
+    case "$CHOICE" in
+        1)  select_disk ;;
+        2)  select_fs ;;
+        3)  select_timezone ;;
+        4)  select_locale ;;
+        5)  set_hostname ;;
+        6)  set_root_pass ;;
+        7)  set_user ;;
+        8)  select_desktop ;;
+        9)  select_bootloader ;;
+        10) select_extra_pkgs ;;
+        11)
+            if [[ -z "$DISK" || -z "$ROOT_PASS" ]]; then
+                msg "  Required:\n\n    Disk\n    Root password"
+            elif show_summary; then
+                do_install
+                break
+            fi
+            ;;
+        0) break ;;
+    esac
+done

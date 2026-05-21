@@ -1,0 +1,18 @@
+[Unit]
+Description=YoMom Linux Boot Splash
+DefaultDependencies=no
+After=local-fs.target
+Before=getty@tty1.service display-manager.service
+ConditionVirtualization=no
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/yominit-splash
+StandardInput=tty
+StandardOutput=tty
+TTYPath=/dev/tty1
+TTYReset=yes
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

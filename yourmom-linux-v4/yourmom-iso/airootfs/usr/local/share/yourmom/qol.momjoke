@@ -1,0 +1,94 @@
+# qol.momjoke - .yourmom Quality of Life Library
+# Load this alongside jksmpl.momjoke for the full experience
+# Usage: yourmom childmake file.yourmom  (if listed in .yourdad)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# FORMATTING
+# ══════════════════════════════════════════════════════════════════════════════
+
+ymff -> printf                          # Formatted print (printf-style, no auto newline)
+ymffl -> puts                           # Print string with newline (puts)
+ymerr -> fprintf                        # Print to stderr
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TIME / SLEEP
+# ══════════════════════════════════════════════════════════════════════════════
+
+ymsleep -> yo_mama_so_slow              # Sleep N milliseconds
+ymwait -> yo_mama_so_slow              # Alias: wait N milliseconds
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RANDOM
+# ══════════════════════════════════════════════════════════════════════════════
+
+ymrng -> yo_mama_so_random_between      # Random int between min and max (inclusive)
+ymrand -> yo_mama_so_random             # Random int (no range)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# FILE I/O
+# ══════════════════════════════════════════════════════════════════════════════
+
+ymrf -> yo_mama_so_nosy_about_files     # Read file → char* (remember to free)
+ymwf -> yo_mama_so_chatty_about_files   # Write string to file → 1 on success
+
+# ══════════════════════════════════════════════════════════════════════════════
+# STRINGS (extras beyond jksmpl)
+# ══════════════════════════════════════════════════════════════════════════════
+
+ymfound -> yo_mama_so_found             # Does string contain substring? (1/0)
+ymupper -> yo_mama_so_upper             # Uppercase string in place
+ymlower -> yo_mama_so_lower             # Lowercase string in place
+ymlen -> yo_mama_so_long                # String length (shorter alias)
+ymcpy -> yo_mama_so_cheap_copy          # String copy
+ymcat -> yo_mama_so_connected           # String concat
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MATH (shorter aliases)
+# ══════════════════════════════════════════════════════════════════════════════
+
+ymabs -> yo_mama_so_thicc               # Absolute value
+ymsqrt -> yo_mama_so_wide               # Square root
+ymsq -> yo_mama_so_square               # Square (x²)
+ymround -> yo_mama_so_round             # Round to nearest int
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MEMORY (shorter aliases)
+# ══════════════════════════════════════════════════════════════════════════════
+
+ymalloc -> yo_mama_so_fat_malloc        # Allocate memory
+ymfree -> yo_mama_so_cheap_free         # Free memory
+
+# ══════════════════════════════════════════════════════════════════════════════
+# STRESS TEST
+# ══════════════════════════════════════════════════════════════════════════════
+
+ymstress -> yo_mama_so_stressed         # Benchmark quantum collapse performance
+
+# ══════════════════════════════════════════════════════════════════════════════
+# USAGE EXAMPLES
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Formatted print:
+# ymff("x is %d and y is %.2f\n", x, y)
+
+# Sleep:
+# ymsleep(500)       — wait 500ms
+
+# Random range:
+# yo n = dym ymrng(1, 100)
+
+# File read:
+# yo content = dym ymrf("data.txt")
+# ymf(content)
+# ymfree(content)
+
+# File write:
+# ymwf("out.txt", "hello from yourmom\n")
+
+# String search:
+# mama_said dym ymfound(name, "mama") == 1 {
+#     ymf("found it")
+# }
+
+# Stress test:
+# dym ymstress()

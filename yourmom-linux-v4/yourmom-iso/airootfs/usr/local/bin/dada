@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# dada — YoMom Linux AUR helper (wraps yay)
+set -euo pipefail
+
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
+CYAN='\033[0;36m'; BOLD='\033[1m'; RESET='\033[0m'
+
+info()  { echo -e "${CYAN}::${RESET} $*"; }
+ok()    { echo -e "${GREEN}✓${RESET} $*"; }
+warn()  { echo -e "${YELLOW}!${RESET} $*"; }
+die()   { echo -e "${RED}💀${RESET} yo mama so dumb she ${*}" >&2; exit 1; }
+
+command -v yay &>/dev/null || die "thought yay was installed. Run: mama get yay"
+
+usage() {
+    echo -e "${BOLD}dada${RESET} — YoMom Linux AUR helper"
+    echo
+    echo -e "  ${BOLD}dada get${RESET} <pkg...>      install from AUR"
+    echo -e "  ${BOLD}dada yeet${RESET} <pkg...>     remove AUR package"
+    echo -e "  ${BOLD}dada upgrade${RESET}            upgrade AUR packages"
+    echo -e "  ${BOLD}dada search${RESET} <term>      search AUR"
+    echo -e "  ${BOLD}dada info${RESET} <pkg>         show AUR package info"
+    echo -e "  ${BOLD}dada list${RESET}               list installed AUR packages"
+    echo -e "  ${BOLD}dada clean${RESET}              clean AUR build cache"
+    echo
+    echo -e "  For official repo packages, use ${BOLD}mama${RESET}"
+    exit 0
+}
+
+[[ $# -eq 0 ]] && usage
+
+CMD="$1"; shift || true
+
+case "$CMD" in
+    get)
+        [[ $# -eq 0 ]] && die "forgot the AUR package name"
+        warn "installing from AUR — dada showed up with: $*"
+        yay -S --aur "$@"
+        ok "dada delivered — $* installed"
+        ;;
+
+    yeet)
+        [[ $# -eq 0 ]] && die "forgot what to yeet"
+        info "yeeting AUR package: $*"
+        yay -R "$@"
+        ok "yeeted — dada left again"
+        ;;
+
+    upgrade)
+        info "upgrading AUR packages..."
+        warn "dada's actually showing up to update things — wild"
+        yay -Syu --aur
+        ok "AUR packages upgraded"
+        ;;
+
+    search)
+        [[ $# -eq 0 ]] && die "forgot what to search for"
+        info "searching AUR for: $*"
+        yay -Ss --aur "$@"
+        ;;
+
+    info)
+        [[ $# -eq 0 ]] && die "forgot the package name"
+        yay -Si --aur "$@"
+        ;;
+
+    list)
+        info "AUR packages installed on this system:"
+        pacman -Qm
+        ;;
+
+    clean)
+        info "cleaning AUR build cache..."
+        yay -Sc --aur
+        ok "build cache cleaned — dada finally cleaned his room"
+        ;;
+
+    *)
+        die "typed '${CMD}' and expected it to work. Run: dada"
+        ;;
+esac

@@ -1,0 +1,11 @@
+NAME="YoMom Linux"
+PRETTY_NAME="YoMom Linux VQ3 (Version 3: Quantum)"
+ID=arch
+ID_LIKE=arch
+BUILD_ID=vq3
+ANSI_COLOR="0;36"
+HOME_URL="https://github.com/viewerofall/yourmom-lang"
+DOCUMENTATION_URL="https://github.com/viewerofall/yourmom-lang"
+SUPPORT_URL="https://github.com/viewerofall/yourmom-lang"
+BUG_REPORT_URL="https://github.com/viewerofall/yourmom-lang/issues"
+LOGO=yourmom

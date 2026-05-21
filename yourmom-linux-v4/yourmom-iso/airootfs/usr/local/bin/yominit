@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+# yominit — YoMom Linux service manager (wraps systemd)
+set -euo pipefail
+
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
+CYAN='\033[0;36m'; BOLD='\033[1m'; DIM='\033[2m'; RESET='\033[0m'
+
+info()  { echo -e "${CYAN}::${RESET} $*"; }
+ok()    { echo -e "${GREEN}✓${RESET}  $*"; }
+warn()  { echo -e "${YELLOW}!${RESET}  $*"; }
+die()   { echo -e "${RED}💀${RESET}  yo mama so dumb she $*" >&2; exit 1; }
+
+need_root() {
+    [[ $EUID -eq 0 ]] || die "thought she didn't need sudo for that. Try: sudo yominit $*"
+}
+
+usage() {
+    echo -e "${BOLD}yominit${RESET} — YoMom Linux service manager"
+    echo
+    echo -e "  ${BOLD}yominit start${RESET} <svc>      start a service"
+    echo -e "  ${BOLD}yominit stop${RESET} <svc>       stop a service"
+    echo -e "  ${BOLD}yominit restart${RESET} <svc>    restart a service"
+    echo -e "  ${BOLD}yominit reload${RESET} <svc>     reload service config"
+    echo -e "  ${BOLD}yominit status${RESET} [svc]     show status"
+    echo -e "  ${BOLD}yominit enable${RESET} <svc>     enable at boot"
+    echo -e "  ${BOLD}yominit disable${RESET} <svc>    disable at boot"
+    echo -e "  ${BOLD}yominit list${RESET}             list all running services"
+    echo -e "  ${BOLD}yominit list-all${RESET}         list all services (including inactive)"
+    echo -e "  ${BOLD}yominit log${RESET} <svc>        show service logs"
+    echo -e "  ${BOLD}yominit log -f${RESET} <svc>     follow service logs"
+    echo -e "  ${BOLD}yominit failed${RESET}           show failed services"
+    echo -e "  ${BOLD}yominit reboot${RESET}           reboot the system"
+    echo -e "  ${BOLD}yominit poweroff${RESET}         power off the system"
+    echo -e "  ${BOLD}yominit suspend${RESET}          suspend the system"
+    echo
+    exit 0
+}
+
+[[ $# -eq 0 ]] && usage
+
+CMD="$1"; shift || true
+
+case "$CMD" in
+    start)
+        [[ $# -eq 0 ]] && die "forgot the service name"
+        need_root start "$@"
+        info "starting $*..."
+        systemctl start "$@"
+        ok "$* is alive"
+        ;;
+
+    stop)
+        [[ $# -eq 0 ]] && die "forgot the service name"
+        need_root stop "$@"
+        info "stopping $*..."
+        systemctl stop "$@"
+        ok "$* has been stopped — moment of silence"
+        ;;
+
+    restart)
+        [[ $# -eq 0 ]] && die "forgot the service name"
+        need_root restart "$@"
+        info "restarting $*..."
+        systemctl restart "$@"
+        ok "$* restarted — back from the dead"
+        ;;
+
+    reload)
+        [[ $# -eq 0 ]] && die "forgot the service name"
+        need_root reload "$@"
+        info "reloading $*..."
+        systemctl reload "$@"
+        ok "$* reloaded"
+        ;;
+
+    status)
+        if [[ $# -eq 0 ]]; then
+            systemctl status
+        else
+            systemctl status "$@"
+        fi
+        ;;
+
+    enable)
+        [[ $# -eq 0 ]] && die "forgot the service name"
+        need_root enable "$@"
+        info "enabling $* at boot..."
+        systemctl enable "$@"
+        ok "$* will now start on boot"
+        ;;
+
+    disable)
+        [[ $# -eq 0 ]] && die "forgot the service name"
+        need_root disable "$@"
+        info "disabling $*..."
+        systemctl disable "$@"
+        ok "$* disabled — deadbeat service"
+        ;;
+
+    list)
+        info "running services:"
+        systemctl list-units --type=service --state=running \
+            --no-pager --plain \
+            | awk 'NR>1 && /\.service/ {
+                printf "  \033[0;32m●\033[0m  %-40s %s\n", $1, $4
+            }'
+        ;;
+
+    list-all)
+        info "all services:"
+        systemctl list-units --type=service --all \
+            --no-pager --plain \
+            | awk 'NR>1 && /\.service/ {
+                color = ($4 == "running") ? "\033[0;32m" : "\033[2m"
+                printf "  %s●\033[0m  %-40s %s\n", color, $1, $4
+            }'
+        ;;
+
+    log)
+        [[ $# -eq 0 ]] && die "forgot the service name"
+        if [[ "$1" == "-f" ]]; then
+            shift
+            [[ $# -eq 0 ]] && die "forgot the service name after -f"
+            journalctl -fu "$@"
+        else
+            journalctl -u "$@" --no-pager
+        fi
+        ;;
+
+    failed)
+        info "failed services:"
+        local count
+        count=$(systemctl list-units --state=failed --no-pager --plain \
+            | grep -c "failed" 2>/dev/null || echo 0)
+        if [[ "$count" -eq 0 ]]; then
+            ok "no failed services — yo mama runs clean"
+        else
+            systemctl list-units --state=failed --no-pager
+        fi
+        ;;
+
+    reboot)
+        warn "rebooting — yo mama's coming back stronger"
+        sleep 1
+        systemctl reboot
+        ;;
+
+    poweroff)
+        warn "powering off — goodnight, yo mama"
+        sleep 1
+        systemctl poweroff
+        ;;
+
+    suspend)
+        info "suspending — yo mama's taking a nap"
+        systemctl suspend
+        ;;
+
+    *)
+        die "typed '${CMD}' and expected it to work. Run: yominit"
+        ;;
+esac

@@ -1,0 +1,28 @@
+
+  /\          YoMom Linux VQ3
+ /  \         ----------------
+/\   \        Version 3: Quantum
+  __  \       
+ (  )  \
+__/  \__ \    Based on Arch Linux (obviously)
+`        `
+
+You have booted into the YoMom Linux live environment.
+Yo mama so experienced, she installs Arch by hand.
+
+COMMANDS:
+  join-game             -- Start the interactive installer
+  yourmom childmake     -- Compile a .yourmom file
+  yourmom run           -- Compile and run a .yourmom file
+  mama get <pkg>        -- Install from official repos
+  dada get <pkg>        -- Install from AUR
+  archinstall           -- Boring regular Arch installer (coward's way out)
+  Installation_guide    -- Arch wiki offline guide
+
+DISKS:    lsblk
+NETWORK:  ip link / iwctl
+MIRRORS:  reflector --sort rate --save /etc/pacman.d/mirrorlist
+
+WARNING: yo mama so destructive, she partitions your disks without asking.
+         Think before you type. We are not responsible for your data.
+

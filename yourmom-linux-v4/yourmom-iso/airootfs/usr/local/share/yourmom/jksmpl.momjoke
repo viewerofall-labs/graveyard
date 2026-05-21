@@ -1,0 +1,93 @@
+# jksmpl.momjoke - .yourmom Standard Library
+# "Just Keep Saying 'Mama' Periodically Library"
+
+# ══════════════════════════════════════════════════════════════════════════
+# CORE SHORTCUTS
+# ══════════════════════════════════════════════════════════════════════════
+
+ymf -> yo_mama_so_fat           # Print with newline
+ymd -> yo_mama_so_dumb          # Panic/abort
+ymsu -> yo_mama_so_ugly         # Unsafe block
+dym -> doing_your_mom           # Function call
+ret -> did_your_mom             # Return statement
+
+# ══════════════════════════════════════════════════════════════════════════
+# I/O FUNCTIONS
+# ══════════════════════════════════════════════════════════════════════════
+
+# Output
+yo_mama_so_fat(x)               # Print value with newline
+yo_mama_so_loud(s)              # Print uppercase with 🔊 emoji
+
+# Input
+yo_mama_so_nosy()               # Read integer from stdin
+yo_mama_so_quiet()              # Read string from stdin
+
+# ══════════════════════════════════════════════════════════════════════════
+# MATH FUNCTIONS
+# ══════════════════════════════════════════════════════════════════════════
+
+yo_mama_so_random()             # Random integer (rand())
+yo_mama_so_round(x)             # Round to nearest integer
+yo_mama_so_square(x)            # Square (x²)
+yo_mama_so_thicc(x)             # Absolute value |x|
+yo_mama_so_wide(x)              # Square root √x
+
+# ══════════════════════════════════════════════════════════════════════════
+# STRING FUNCTIONS
+# ══════════════════════════════════════════════════════════════════════════
+
+yo_mama_so_long(s)              # String length (strlen)
+yo_mama_so_cheap_copy(dst, src) # String copy (strcpy)
+yo_mama_so_connected(dst, src)  # String concatenation (strcat)
+
+# ══════════════════════════════════════════════════════════════════════════
+# MEMORY FUNCTIONS
+# ══════════════════════════════════════════════════════════════════════════
+
+yo_mama_so_fat_malloc(size)     # Allocate memory (quantum-aware malloc)
+yo_mama_so_cheap_free(ptr)      # Free memory
+
+# ══════════════════════════════════════════════════════════════════════════
+# QUANTUM FUNCTIONS
+# ══════════════════════════════════════════════════════════════════════════
+
+heisenberg(vals)                # Create Heisenberg variable (re-collapse every read)
+entangled_with var              # Create entangled variable (shares collapse with var)
+quantum_sort(vals)              # Sort superposition, return minimum
+yo_mama_observe(var)            # Force collapse of quantum variable
+yo_mama_collapsed(var)          # Check if variable is already collapsed (returns bool)
+
+# ══════════════════════════════════════════════════════════════════════════
+# NUMBER TYPE KEYWORDS (not functions, but quantum types)
+# ══════════════════════════════════════════════════════════════════════════
+
+int_all                         # Any 32-bit integer
+real_all                        # Any double-precision float
+rational_all                    # Random fraction (fully reduced)
+irrational_all                  # Famous irrational constant (π, e, √2, φ, etc.)
+imaginary_all                   # Complex number (a+bi, b≠0)
+quaternion_all                  # Quaternion (w+xi+yj+zk)
+transfinite_all                 # Transfinite cardinal/ordinal (ℵ₀, ω, ε₀, etc.)
+
+# ══════════════════════════════════════════════════════════════════════════
+# USAGE EXAMPLES
+# ══════════════════════════════════════════════════════════════════════════
+
+# Print shorthand:
+# ymf("Hello")  →  yo_mama_so_fat("Hello")
+
+# Function call:
+# yo result = dym add(5, 10)  →  yo result = doing_your_mom add(5, 10)
+
+# Return:
+# ret 42  →  did_your_mom 42
+
+# Input example:
+# yo_mama_so_loud("Enter a number:")
+# yo num = dym yo_mama_so_nosy()
+
+# Quantum example:
+# yo x = 10 | 20 | 30
+# yo h = heisenberg(1 | 2 | 3)
+# yo e = entangled_with x
