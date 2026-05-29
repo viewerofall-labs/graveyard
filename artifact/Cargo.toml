@@ -1,0 +1,21 @@
+[package]
+name = "artifact"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cairo-rs = "0.18"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+rand = "0.8"
+memmap2 = "0.9"
+libc = "0.2"
+
+[profile.release]
+opt-level = 3
+lto = true

@@ -1,0 +1,38 @@
+#!/bin/bash
+# artifact - GPU artifact simulator controller
+
+SOCKET="/tmp/artifact.sock"
+BINARY="${0%/*}/target/release/artifact"
+
+if [ ! -f "$BINARY" ]; then
+    BINARY="${0%/*}/target/debug/artifact"
+fi
+
+if [ ! -f "$BINARY" ]; then
+    echo "Error: artifact binary not found. Please build it first with: cargo build --release"
+    exit 1
+fi
+
+case "${1:-daemon}" in
+    daemon)
+        "$BINARY"
+        ;;
+    start)
+        "$BINARY" start
+        ;;
+    stop)
+        "$BINARY" stop
+        ;;
+    status)
+        "$BINARY" status
+        ;;
+    *)
+        echo "Usage: $0 {daemon|start|stop|status}"
+        echo ""
+        echo "  daemon  - Run as background daemon (default)"
+        echo "  start   - Start the artifact simulation"
+        echo "  stop    - Stop the artifact simulation"
+        echo "  status  - Show current status"
+        exit 1
+        ;;
+esac
