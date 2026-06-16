@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Console
+Comment=Log into a Zsh shell
+Exec=zsh --login
+Type=Application
+DesktopNames=Console
