@@ -1,0 +1,13 @@
+[Unit]
+Description=pipescreen — idle pipes screensaver + suspend
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/pipescreen
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target
