@@ -1,0 +1,7 @@
+build/
+third_party/imgui/
+*.o
+*.a
+*.so
+*.dylib
+.DS_Store
