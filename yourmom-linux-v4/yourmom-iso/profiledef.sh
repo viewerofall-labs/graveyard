@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2034
 
-iso_name="yourmom"
-iso_label="YOURMOM_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
-iso_publisher="Yo Mama Computing Solutions <https://github.com/viewerofall/yourmom-lang>"
-iso_application="YoMom Linux — btw I use yo mama"
-iso_version="$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y.%m.%d)-vq4"
+iso_name="veilos"
+iso_label="VEILOS_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
+iso_publisher="The Holy Veil <https://github.com/TheHolyVeil/veil>"
+iso_application="VeilOS — Lightweight Wayland Compositor"
+iso_version="$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y.%m.%d)"
 install_dir="arch"
 buildmodes=('iso')
 bootmodes=('bios.syslinux'
@@ -22,10 +22,6 @@ file_permissions=(
   ["/usr/local/bin/choose-mirror"]="0:0:755"
   ["/usr/local/bin/Installation_guide"]="0:0:755"
   ["/usr/local/bin/livecd-sound"]="0:0:755"
-  ["/usr/local/bin/join-game"]="0:0:755"
-  ["/usr/local/bin/yourmom"]="0:0:755"
-  ["/usr/local/bin/mama"]="0:0:755"
-  ["/usr/local/bin/dada"]="0:0:755"
-  ["/usr/local/bin/yominit"]="0:0:755"
-  ["/usr/local/bin/yominit-splash"]="0:0:755"
+  ["/usr/lib/veilos/setup-veil.sh"]="0:0:755"
+  ["/usr/lib/veilos/setup-sway-woven.sh"]="0:0:755"
 )

@@ -1,0 +1,13 @@
+[package]
+name = "wayland-screencopy-daemon"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+wayland-client = "0.29.5"
+wayland-protocols = { version = "0.29.5", features = ["client", "unstable_protocols"] }
+image = "0.24"
+chrono = "0.4"
+nix = { version = "0.26", features = ["mman"] }
+memmap2 = "0.9"
+dirs = "5.0"
